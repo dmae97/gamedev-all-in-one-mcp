@@ -2,44 +2,105 @@
 
 ![License: AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-blue.svg)
 ![Node 20+](https://img.shields.io/badge/node-20%2B-43853d.svg)
+![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)
 
-Open-source MCP for building Roblox games with one public MCP surface, a Luau companion runtime inside Studio, and Blender asset workflows behind the same package.
+Open-source MCP for Roblox game creation, with one public stdio MCP surface, a Luau runtime companion inside Studio, and a Blender integration path under the same project.
 
-## Quick start
+## Languages
+
+- [English](#english)
+- [한국어](#한국어)
+- [中文](#中文)
+
+## English
+
+Roblox All-in-One MCP is an early open-source attempt to make Roblox creation feel native inside MCP-compatible clients.
+
+Instead of splitting Roblox, Luau runtime work, and future Blender workflows across disconnected tools, this project keeps them behind one MCP server.
+
+### What works now
+
+- `project_init`
+- `inspect_project`
+- `doctor`
+- `list_capabilities`
+- live Luau runtime handshake
+- runtime health checks
+- first mutation workflows:
+  - `roblox_run_code`
+  - `roblox_create_workspace_part`
+
+### Why this project exists
+
+Most projects in this space do one thing well.
+
+- Roblox-only MCP
+- Blender-only MCP
+- Blender to Roblox upload
+- multi-DCC experiments for other engines
+
+This repository is trying to combine the missing pieces into one workflow:
+
+- one local stdio MCP server
+- Roblox game-building workflows
+- explicit Luau companion plugin/runtime layer
+- Blender asset pipeline direction
+- cross-client setup for Claude Desktop, Cursor, Claude Code, OpenCode, VS Code / Copilot-style setups, and similar MCP clients
+
+## 한국어
+
+이 프로젝트는 로블록스 게임 제작을 MCP 환경에서 자연스럽게 만들기 위한 오픈소스 시도입니다.
+
+로블록스 작업, Luau 런타임, 앞으로 붙을 Blender 자산 흐름을 따로 노는 툴로 두지 않고, 하나의 MCP 서버 뒤로 묶는 방향입니다.
+
+현재 되는 것:
+
+- 프로젝트 초기화
+- 상태 inspection
+- 진단 도구 (`doctor`)
+- capability 조회
+- Luau 런타임 live handshake
+- health-check
+- 첫 mutation workflow
+
+아직 알파 단계지만, 이제 단순 설계 문서만 있는 상태는 아닙니다. 실제 shell, bridge, handshake, 첫 구조화된 mutation path까지 올라와 있습니다.
+
+## 中文
+
+这个项目是在尝试把 Roblox 游戏开发流程真正放进 MCP 生态里。
+
+目标不是做一个只会调用单个编辑器的 demo，而是把 Roblox 工作流、Studio 里的 Luau runtime，以及未来的 Blender 资产流程，统一到一个 MCP server 下面。
+
+当前已经可用的部分包括：
+
+- project init
+- project inspect
+- doctor / capabilities
+- live Luau runtime handshake
+- health checks
+- first mutation workflows
+
+现在还是 alpha，但已经不是只有架构文档的阶段了。
+
+## Quick Start
 
 ```bash
 npm install
 npm run build
 ```
 
-Then register the built server in your MCP client with a stdio entry pointing to `dist/index.js`.
+Then point your MCP client to:
 
-Current foundation tools:
+```text
+node /absolute/path/to/roblox_all_in_one_mcp/dist/index.js
+```
+
+After that, run:
 
 - `doctor`
 - `list_capabilities`
-- `project_init`
-- `inspect_project`
-- `roblox_run_code`
 
-## What makes this different
-
-Most MCP projects in this space do one thing well.
-
-- Roblox-only MCP
-- Blender-only MCP
-- Blender to Roblox asset upload
-- multi-DCC experiments for other engines
-
-This repository is aiming at the missing combination:
-
-- one local stdio MCP package
-- Roblox game-building workflows
-- explicit Luau companion plugin/runtime layer
-- Blender asset pipeline integration
-- cross-client setup for Claude Desktop, Cursor, Claude Code, OpenCode, Codex-style clients, and similar MCP tools
-
-## Current architecture
+## Architecture
 
 ```text
 MCP Client
@@ -52,13 +113,42 @@ MCP Client
       -> validation and doctor layer
 ```
 
-The important bit is the Luau boundary.
+The key idea is the Luau boundary.
 
-This project is not treating Roblox Studio like a black box. It is explicitly reserving a Studio-side runtime layer for Luau execution, playtest control, logs, and mutation workflows.
+This repository does not treat Roblox Studio as a black box. It explicitly models a Studio-side companion runtime for Luau execution, runtime logs, playtest control, and mutation workflows.
 
-## Status
+## Screenshots / Examples / Inspiration
 
-This repository is in the first public architecture phase.
+The current repository is still alpha, so the best visual references today are the MCP projects that informed this architecture.
+
+These are reference examples, not claims that this repository already matches all of them.
+
+### Blender MCP UI examples
+
+<p>
+  <img src="https://raw.githubusercontent.com/ahujasid/blender-mcp/main/assets/addon-instructions.png" alt="Blender MCP addon instructions" width="48%" />
+  <img src="https://raw.githubusercontent.com/ahujasid/blender-mcp/main/assets/hammer-icon.png" alt="Blender MCP hammer icon" width="48%" />
+</p>
+
+Source: `ahujasid/blender-mcp`
+
+### Blender MCP rendered scene example
+
+<p>
+  <img src="https://raw.githubusercontent.com/djeada/blender-mcp-server/main/docs/images/demo_render.png" alt="Blender MCP render example" width="72%" />
+</p>
+
+Source: `djeada/blender-mcp-server`
+
+### Video references
+
+- Blender MCP full tutorial: https://www.youtube.com/watch?v=lCyQ717DuzQ
+- Blender MCP setup: https://www.youtube.com/watch?v=neoK_WMq92g
+- Blender MCP demo scene: https://www.youtube.com/watch?v=DqgKuLYUv00
+- Blender MCP Poly Haven demo: https://www.youtube.com/watch?v=I29rn92gkC4
+- Blender MCP image-to-scene demo: https://www.youtube.com/watch?v=FDRb03XPiRo
+
+## Current Status
 
 Already in place:
 
@@ -68,31 +158,44 @@ Already in place:
 - `project_init`
 - `inspect_project`
 - `roblox_run_code`
-- manifest path detection
+- `roblox_create_workspace_part`
+- local project manifest
 - live Luau runtime bridge server
-- Luau runtime handshake and health check path
-- first Roblox mutation workflow through the Luau boundary
-- architecture and license direction
+- Luau runtime handshake and health path
+- Studio-side Luau consumer loop
+- Studio-side plugin bootstrap entrypoint
 
-Planned for the next week:
+Next up:
 
-1. production-ready Studio-side plugin packaging
-2. richer Roblox mutation workflows beyond `roblox_run_code`
+1. production-ready Studio plugin packaging
+2. richer Roblox scene / UI / script workflows
 3. Blender asset sync path
-4. more client config coverage
+4. broader client docs and examples
 
-Expected time for the current milestone: about 1 week.
+## Client Config Docs
 
-## Upstream strategy
+- `docs/client-config/claude-desktop.md`
+- `docs/client-config/claude-code.md`
+- `docs/client-config/cursor.md`
+- `docs/client-config/opencode.md`
+- `docs/client-config/vscode-copilot.md`
+- `docs/client-config/troubleshooting.md`
+
+## Docs
+
+- `process.md`
+- `docs/architecture.md`
+- `docs/open-source-quality.md`
+- `docs/client-config/README.md`
+
+## Upstream References
 
 - Roblox runtime target: built-in Roblox Studio MCP
-- Roblox product/reference sources: `drgost1/robloxstudio-mcp`, Roblox official Studio MCP docs
+- Roblox reference: `drgost1/robloxstudio-mcp`
 - Blender references: `ahujasid/blender-mcp`, `djeada/blender-mcp-server`
-- pattern references only: `CoplayDev/unity-mcp`, `loonghao/dcc-mcp-ipc`
+- pattern references: `CoplayDev/unity-mcp`, `loonghao/dcc-mcp-ipc`
 
-This repository is opinionated about one thing: the public UX must feel like one MCP, not a pile of disconnected servers.
-
-## Open source and license
+## License
 
 This project is licensed under **AGPL-3.0-only**.
 
@@ -105,15 +208,4 @@ That is intentional.
 For source reuse inside this repository:
 
 - direct code adaptation is fine from `MIT` and `Apache-2.0` upstreams
-- `GPL` and `AGPL` projects are primarily reference material unless we intentionally accept full copyleft consequences for the derived code
-
-## Docs
-
-- `process.md`
-- `docs/architecture.md`
-- `docs/open-source-quality.md`
-- `docs/client-config/README.md`
-
-## Links
-
-- Docs: `docs/architecture.md`
+- `GPL` and `AGPL` projects are mainly reference material unless full copyleft implications are intentionally accepted
