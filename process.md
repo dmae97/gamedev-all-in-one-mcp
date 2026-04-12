@@ -90,5 +90,3 @@ MCP Client
 ## 기준 문서
 
 - 아키텍처: `docs/architecture.md`
-- 활성 계획: `specs/main/plan.md`
-- 현재 작업 이력: `specs/main/tasks.md`

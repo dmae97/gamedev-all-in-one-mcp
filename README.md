@@ -62,8 +62,6 @@ This repository is in the first public architecture phase.
 
 Already in place:
 
-- real Spec Kit initialization
-- active planning artifacts in `specs/main/`
 - MCP server bootstrap
 - `doctor`
 - `list_capabilities`
@@ -115,11 +113,7 @@ For source reuse inside this repository:
 - `docs/architecture.md`
 - `docs/open-source-quality.md`
 - `docs/client-config/README.md`
-- `specs/main/plan.md`
-- `specs/main/research.md`
 
 ## Links
 
 - Docs: `docs/architecture.md`
-- Planning: `specs/main/plan.md`
-- Research: `specs/main/research.md`

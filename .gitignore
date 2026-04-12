@@ -5,5 +5,6 @@ dist/
 process.md
 .opencode
 .specify
+specs/main
 # local project state
 .roblox-mcp/
