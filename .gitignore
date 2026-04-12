@@ -4,6 +4,6 @@ dist/
 *.log
 process.md
 .opencode
-
+.specify
 # local project state
 .roblox-mcp/
