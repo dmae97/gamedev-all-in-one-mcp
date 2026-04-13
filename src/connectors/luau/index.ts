@@ -57,7 +57,7 @@ export async function detectLuauRuntime(cwd = process.cwd()): Promise<LuauRuntim
   }
 
   return {
-    available: bridgeStatus.connected || pluginPath,
+    available: bridgeStatus.connected || (pluginPath && !bridgeStatus.stale),
     reasons,
     detected: {
       bridge: true,

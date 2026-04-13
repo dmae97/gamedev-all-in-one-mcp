@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All-in-One MCP &middot; Control Plane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-void: #08090d;
+    --bg-surface: #0e1018;
+    --bg-elevated: #141724;
+    --bg-card: rgba(20,23,40,0.65);
+    --bg-card-hover: rgba(30,34,58,0.8);
+    --border-subtle: rgba(255,255,255,0.06);
+    --border-focus: rgba(255,255,255,0.12);
+    --text-high: #f0f0f3;
+    --text-mid: #a0a4b8;
+    --text-low: #5c6078;
+    --accent-roblox: #ff3e3e;
+    --accent-unity: #a0a0a0;
+    --accent-unreal: #4da6ff;
+    --accent-blender: #f5922e;
+    --accent-foundation: #36d6c3;
+    --accent-green: #2dd4a8;
+    --accent-warn: #fbbf24;
+    --accent-err: #f87171;
+    --glow-roblox: rgba(255,62,62,0.15);
+    --glow-unity: rgba(160,160,160,0.1);
+    --glow-unreal: rgba(77,166,255,0.15);
+    --glow-blender: rgba(245,146,46,0.15);
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-void);
+    color: var(--text-high);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(77,166,255,0.04), transparent),
+      radial-gradient(ellipse 60% 50% at 80% 90%, rgba(255,62,62,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+
+  .scene { position: relative; z-index: 2; }
+
+  .topbar {
+    background: rgba(14,16,24,0.85);
+    backdrop-filter: blur(20px) saturate(1.4);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .mark {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-xs);
+    background: linear-gradient(135deg, #4da6ff 0%, #36d6c3 50%, #2dd4a8 100%);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 13px;
+    color: #08090d;
+    box-shadow: 0 0 20px rgba(54,214,195,0.25);
+  }
+
+  .topbar-name {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+  }
+
+  .topbar-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-low);
+    background: rgba(255,255,255,0.04);
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-mid);
+    background: rgba(255,255,255,0.03);
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-err);
+    transition: background 0.4s, box-shadow 0.4s;
+  }
+
+  .live-dot.on {
+    background: var(--accent-green);
+    box-shadow: 0 0 8px rgba(45,212,168,0.5);
+    animation: breathe 3s ease-in-out infinite;
+  }
+
+  .live-dot.wait {
+    background: var(--accent-warn);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%, 100% { box-shadow: 0 0 6px rgba(45,212,168,0.35); }
+    50% { box-shadow: 0 0 16px rgba(45,212,168,0.65); }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .layout {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 32px 28px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-low);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .engines {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 1100px) { .engines { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .engines { grid-template-columns: 1fr; } }
+
+  .ecard {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(.22,.68,0,1), border-color 0.3s, box-shadow 0.3s;
+    animation: cardIn 0.5s cubic-bezier(.22,.68,0,1) both;
+  }
+
+  .ecard:nth-child(1) { animation-delay: 0s; }
+  .ecard:nth-child(2) { animation-delay: 0.07s; }
+  .ecard:nth-child(3) { animation-delay: 0.14s; }
+  .ecard:nth-child(4) { animation-delay: 0.21s; }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .ecard:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-focus);
+  }
+
+  .ecard[data-engine="roblox"]:hover { box-shadow: 0 8px 40px var(--glow-roblox); }
+  .ecard[data-engine="unity"]:hover { box-shadow: 0 8px 40px var(--glow-unity); }
+  .ecard[data-engine="unreal"]:hover { box-shadow: 0 8px 40px var(--glow-unreal); }
+  .ecard[data-engine="blender"]:hover { box-shadow: 0 8px 40px var(--glow-blender); }
+
+  .ecard-glow {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .ecard[data-engine="roblox"] .ecard-glow { background: var(--accent-roblox); box-shadow: 0 0 20px var(--glow-roblox); }
+  .ecard[data-engine="unity"] .ecard-glow { background: var(--accent-unity); box-shadow: 0 0 20px var(--glow-unity); }
+  .ecard[data-engine="unreal"] .ecard-glow { background: var(--accent-unreal); box-shadow: 0 0 20px var(--glow-unreal); }
+  .ecard[data-engine="blender"] .ecard-glow { background: var(--accent-blender); box-shadow: 0 0 20px var(--glow-blender); }
+
+  .ecard-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .ecard-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .ecard-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-xs);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .ecard-icon.roblox { background: rgba(255,62,62,0.12); color: var(--accent-roblox); }
+  .ecard-icon.unity { background: rgba(255,255,255,0.06); color: var(--accent-unity); }
+  .ecard-icon.unreal { background: rgba(77,166,255,0.12); color: var(--accent-unreal); }
+  .ecard-icon.blender { background: rgba(245,146,46,0.12); color: var(--accent-blender); }
+
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border: 1px solid transparent;
+  }
+
+  .pill.active { background: rgba(45,212,168,0.1); color: var(--accent-green); border-color: rgba(45,212,168,0.2); }
+  .pill.detected { background: rgba(251,191,36,0.1); color: var(--accent-warn); border-color: rgba(251,191,36,0.15); }
+  .pill.offline { background: rgba(255,255,255,0.03); color: var(--text-low); border-color: var(--border-subtle); }
+  .pill.planned { background: rgba(77,166,255,0.08); color: rgba(77,166,255,0.7); border-color: rgba(77,166,255,0.12); }
+
+  .ecard-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .metric {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .metric-val {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-high);
+    line-height: 1;
+  }
+
+  .metric-lbl {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-low);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 5px;
+  }
+
+  .ecard-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .erow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 12px;
+  }
+
+  .erow:last-child { border-bottom: none; }
+
+  .erow-k {
+    color: var(--text-low);
+    font-weight: 500;
+  }
+
+  .erow-v {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .erow-v.ok { color: var(--accent-green); }
+  .erow-v.warn { color: var(--accent-warn); }
+  .erow-v.err { color: var(--accent-err); }
+  .erow-v.dim { color: var(--text-low); }
+
+  .panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 24px;
+    animation: cardIn 0.5s cubic-bezier(.22,.68,0,1) 0.28s both;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .panel-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-low);
+  }
+
+  .search {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    color: var(--text-high);
+    font-family: var(--font-body);
+    font-size: 13px;
+    outline: none;
+    width: 260px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search::placeholder { color: var(--text-low); }
+  .search:focus {
+    border-color: rgba(54,214,195,0.4);
+    box-shadow: 0 0 0 3px rgba(54,214,195,0.08);
+  }
+
+  .tgroups {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .tgroup-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tgroup-label .tdot { width: 5px; height: 5px; border-radius: 50%; }
+  .tgroup-label .tdot.foundation { background: var(--accent-foundation); }
+  .tgroup-label .tdot.roblox { background: var(--accent-roblox); }
+  .tgroup-label .tdot.unity { background: var(--accent-unity); }
+  .tgroup-label .tdot.unreal { background: var(--accent-unreal); }
+  .tgroup-label .tdot.blender { background: var(--accent-blender); }
+
+  .tgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .titem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-radius: var(--radius-xs);
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    cursor: default;
+  }
+
+  .titem:hover {
+    background: rgba(255,255,255,0.025);
+    border-color: var(--border-subtle);
+  }
+
+  .titem-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .titem-dot.foundation { background: var(--accent-foundation); }
+  .titem-dot.roblox { background: var(--accent-roblox); }
+  .titem-dot.unity { background: var(--accent-unity); }
+  .titem-dot.unreal { background: var(--accent-unreal); }
+  .titem-dot.blender { background: var(--accent-blender); }
+
+  .titem-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-high);
+  }
+
+  .titem-desc {
+    font-size: 11px;
+    color: var(--text-low);
+    margin-left: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 170px;
+    text-align: right;
+  }
+
+  .ai-panel { animation-delay: 0.32s; }
+
+  .ai-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .ai-select {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    padding: 7px 10px;
+    color: var(--text-high);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .ai-select:focus { border-color: rgba(54,214,195,0.4); }
+
+  .ai-key {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    padding: 7px 10px;
+    color: var(--text-high);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    outline: none;
+    width: 200px;
+  }
+
+  .ai-key::placeholder { color: var(--text-low); }
+  .ai-key:focus { border-color: rgba(54,214,195,0.4); }
+
+  .ai-messages {
+    background: var(--bg-void);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    min-height: 180px;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .ai-msg { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .ai-msg:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .ai-msg-role { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .ai-msg-role.user { color: var(--accent-foundation); }
+  .ai-msg-role.assistant { color: var(--accent-unreal); }
+  .ai-msg-role.tool { color: var(--accent-warn); }
+  .ai-msg-role.error { color: var(--accent-err); }
+  .ai-msg-text { color: var(--text-mid); white-space: pre-wrap; word-break: break-word; }
+  .ai-msg-text code { font-family: var(--font-mono); font-size: 12px; background: rgba(255,255,255,0.04); padding: 1px 4px; border-radius: 3px; }
+
+  .ai-tool-call { background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.12); border-radius: var(--radius-xs); padding: 8px 10px; margin: 6px 0; font-family: var(--font-mono); font-size: 11px; }
+  .ai-tool-name { color: var(--accent-warn); font-weight: 600; }
+  .ai-tool-result { color: var(--text-low); margin-top: 4px; max-height: 100px; overflow-y: auto; }
+
+  .ai-input-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ai-prompt {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text-high);
+    font-family: var(--font-body);
+    font-size: 13px;
+    outline: none;
+  }
+
+  .ai-prompt::placeholder { color: var(--text-low); }
+  .ai-prompt:focus { border-color: rgba(54,214,195,0.4); box-shadow: 0 0 0 3px rgba(54,214,195,0.08); }
+
+  .ai-send {
+    background: linear-gradient(135deg, #4da6ff 0%, #36d6c3 100%);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    color: #08090d;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .ai-send:hover { opacity: 0.85; }
+  .ai-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .log-panel {
+    animation-delay: 0.35s;
+  }
+
+  .logbox {
+    background: var(--bg-void);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.9;
+    max-height: 220px;
+    overflow-y: auto;
+    color: var(--text-mid);
+  }
+
+  .logbox .le { padding: 1px 0; }
+  .logbox .lt { color: var(--text-low); }
+  .logbox .li { color: var(--accent-unreal); }
+  .logbox .lw { color: var(--accent-warn); }
+  .logbox .lr { color: var(--accent-err); }
+  .logbox .lo { color: var(--accent-green); }
+
+  .foot {
+    text-align: center;
+    padding: 20px 28px;
+    font-size: 11px;
+    color: var(--text-low);
+    letter-spacing: 0.3px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .foot a {
+    color: var(--accent-foundation);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .foot a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .layout { padding: 20px 16px 36px; }
+    .tgrid { grid-template-columns: 1fr; }
+    .search { width: 100%; }
+    .panel-head { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="scene">
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="mark">CP</div>
+    <span class="topbar-name">All-in-One MCP</span>
+    <span class="topbar-tag" id="version">v0.1.0</span>
+  </div>
+  <div class="topbar-right">
+    <div class="live-badge">
+      <div class="live-dot wait" id="sseDot"></div>
+      <span id="sseLabel">connecting</span>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="label">Engine Connectors</div>
+
+  <div class="engines" id="engineGrid">
+    <div class="ecard" data-engine="roblox">
+      <div class="ecard-glow"></div>
+      <div class="ecard-head">
+        <div class="ecard-title">
+          <div class="ecard-icon roblox">R</div>
+          Roblox Studio
+        </div>
+        <span class="pill offline" id="roblox-status">offline</span>
+      </div>
+      <div class="ecard-metrics">
+        <div class="metric"><div class="metric-val">15</div><div class="metric-lbl">Tools</div></div>
+        <div class="metric"><div class="metric-val">15</div><div class="metric-lbl">Cmds</div></div>
+        <div class="metric"><div class="metric-val">3002</div><div class="metric-lbl">Port</div></div>
+      </div>
+      <div class="ecard-rows">
+        <div class="erow"><span class="erow-k">Bridge</span><span class="erow-v dim" id="roblox-bridge">&mdash;</span></div>
+        <div class="erow"><span class="erow-k">Plugin</span><span class="erow-v dim" id="roblox-plugin">&mdash;</span></div>
+        <div class="erow"><span class="erow-k">Handshake</span><span class="erow-v dim" id="roblox-handshake">&mdash;</span></div>
+        <div class="erow"><span class="erow-k">Protocol</span><span class="erow-v dim">HTTP long-poll</span></div>
+      </div>
+    </div>
+
+    <div class="ecard" data-engine="unity">
+      <div class="ecard-glow"></div>
+      <div class="ecard-head">
+        <div class="ecard-title">
+          <div class="ecard-icon unity">U</div>
+          Unity Editor
+        </div>
+        <span class="pill offline" id="unity-status">offline</span>
+      </div>
+      <div class="ecard-metrics">
+        <div class="metric"><div class="metric-val">10</div><div class="metric-lbl">Tools</div></div>
+        <div class="metric"><div class="metric-val">10</div><div class="metric-lbl">Cmds</div></div>
+        <div class="metric"><div class="metric-val">7890</div><div class="metric-lbl">Port</div></div>
+      </div>
+      <div class="ecard-rows">
+        <div class="erow"><span class="erow-k">Bridge</span><span class="erow-v dim" id="unity-bridge">&mdash;</span></div>
+        <div class="erow"><span class="erow-k">Protocol</span><span class="erow-v dim">TCP socket</span></div>
+        <div class="erow"><span class="erow-k">Ref</span><span class="erow-v dim">mcp-unity (MIT)</span></div>
+      </div>
+    </div>
+
+    <div class="ecard" data-engine="unreal">
+      <div class="ecard-glow"></div>
+      <div class="ecard-head">
+        <div class="ecard-title">
+          <div class="ecard-icon unreal">UE</div>
+          Unreal Engine
+        </div>
+        <span class="pill offline" id="unreal-status">offline</span>
+      </div>
+      <div class="ecard-metrics">
+        <div class="metric"><div class="metric-val">10</div><div class="metric-lbl">Tools</div></div>
+        <div class="metric"><div class="metric-val">10</div><div class="metric-lbl">Cmds</div></div>
+        <div class="metric"><div class="metric-val">55557</div><div class="metric-lbl">Port</div></div>
+      </div>
+      <div class="ecard-rows">
+        <div class="erow"><span class="erow-k">Bridge</span><span class="erow-v dim" id="unreal-bridge">&mdash;</span></div>
+        <div class="erow"><span class="erow-k">Protocol</span><span class="erow-v dim">TCP socket</span></div>
+        <div class="erow"><span class="erow-k">Ref</span><span class="erow-v dim">unreal-mcp (MIT)</span></div>
+      </div>
+    </div>
+
+    <div class="ecard" data-engine="blender">
+      <div class="ecard-glow"></div>
+      <div class="ecard-head">
+        <div class="ecard-title">
+          <div class="ecard-icon blender">B</div>
+          Blender
+        </div>
+        <span class="pill offline" id="blender-status">offline</span>
+      </div>
+      <div class="ecard-metrics">
+        <div class="metric"><div class="metric-val">8</div><div class="metric-lbl">Tools</div></div>
+        <div class="metric"><div class="metric-val">8</div><div class="metric-lbl">Cmds</div></div>
+        <div class="metric"><div class="metric-val">9876</div><div class="metric-lbl">Port</div></div>
+      </div>
+      <div class="ecard-rows">
+        <div class="erow"><span class="erow-k">Binary</span><span class="erow-v dim" id="blender-binary">&mdash;</span></div>
+        <div class="erow"><span class="erow-k">Bridge</span><span class="erow-v dim" id="blender-bridge">&mdash;</span></div>
+        <div class="erow"><span class="erow-k">Protocol</span><span class="erow-v dim">TCP socket</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="label">Registered Tools</div>
+        <div class="panel-sub" id="toolsCount">67 tools &middot; 12 modules</div>
+      </div>
+      <input type="text" class="search" id="toolFilter" placeholder="Filter tools...">
+    </div>
+    <div class="tgroups" id="toolGroups"></div>
+  </div>
+
+  <div class="panel ai-panel">
+    <div class="panel-head">
+      <div class="label">AI Console</div>
+      <div class="ai-controls">
+        <select class="ai-select" id="aiProvider">
+          <option value="anthropic">Anthropic</option>
+          <option value="openai">OpenAI</option>
+          <option value="google">Google</option>
+        </select>
+        <select class="ai-select" id="aiModel"></select>
+        <input type="password" class="ai-key" id="aiKey" placeholder="API Key">
+      </div>
+    </div>
+    <div class="ai-messages" id="aiMessages"></div>
+    <div class="ai-input-row">
+      <input type="text" class="ai-prompt" id="aiPrompt" placeholder="Ask the AI to control your game engines...">
+      <button class="ai-send" id="aiSend">Send</button>
+    </div>
+  </div>
+
+  <div class="panel log-panel">
+    <div class="label" style="margin-bottom: 14px;">Event Log</div>
+    <div class="logbox" id="logArea">
+      <div class="le"><span class="lt">[--:--:--]</span> <span class="li">waiting for connection...</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  All-in-One MCP Control Plane &middot; AGPL-3.0-only &middot;
+  <a href="https://github.com/nicepkg/gamedev-all-in-one" target="_blank">GitHub</a>
+</div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var TOOLS = [
+    { group: 'Foundation', engine: 'foundation', tools: [
+      { name: 'project_init', desc: 'Initialize project manifest' },
+      { name: 'inspect_project', desc: 'Read manifest state' },
+      { name: 'doctor', desc: 'Validate environment' },
+      { name: 'list_capabilities', desc: 'List tools & connectors' }
+    ]},
+    { group: 'Roblox \u00b7 Core', engine: 'roblox', tools: [
+      { name: 'roblox_run_code', desc: 'Execute Luau code' },
+      { name: 'roblox_create_workspace_part', desc: 'Create Part in Workspace' }
+    ]},
+    { group: 'Roblox \u00b7 Script', engine: 'roblox', tools: [
+      { name: 'roblox_get_script_source', desc: 'Read script source' },
+      { name: 'roblox_set_script_source', desc: 'Overwrite script source' },
+      { name: 'roblox_edit_script_lines', desc: 'Replace line range' },
+      { name: 'roblox_grep_scripts', desc: 'Search scripts by pattern' }
+    ]},
+    { group: 'Roblox \u00b7 Instance', engine: 'roblox', tools: [
+      { name: 'roblox_create_instance', desc: 'Create any ClassName' },
+      { name: 'roblox_delete_instance', desc: 'Delete instance by path' },
+      { name: 'roblox_set_property', desc: 'Set instance property' },
+      { name: 'roblox_clone_instance', desc: 'Clone instance' },
+      { name: 'roblox_reparent_instance', desc: 'Move to new parent' }
+    ]},
+    { group: 'Roblox \u00b7 Query', engine: 'roblox', tools: [
+      { name: 'roblox_get_instance_properties', desc: 'Read all properties' },
+      { name: 'roblox_get_instance_children', desc: 'List direct children' },
+      { name: 'roblox_search_instances', desc: 'Find by class/name' },
+      { name: 'roblox_get_file_tree', desc: 'Hierarchical tree view' }
+    ]},
+    { group: 'Roblox \u00b7 Physics', engine: 'roblox', tools: [
+      { name: 'roblox_set_gravity', desc: 'Set world gravity' },
+      { name: 'roblox_set_physics', desc: 'Anchor/unanchor part' },
+      { name: 'roblox_add_constraint', desc: 'Add physics constraint' },
+      { name: 'roblox_raycast', desc: 'Cast ray in 3D space' },
+      { name: 'roblox_simulate_physics', desc: 'Apply impulse/force' }
+    ]},
+    { group: 'Unity', engine: 'unity', tools: [
+      { name: 'unity_get_hierarchy', desc: 'Scene hierarchy tree' },
+      { name: 'unity_get_gameobject', desc: 'GameObject properties' },
+      { name: 'unity_create_gameobject', desc: 'Create GameObject' },
+      { name: 'unity_delete_gameobject', desc: 'Delete GameObject' },
+      { name: 'unity_set_component_property', desc: 'Set component prop' },
+      { name: 'unity_add_component', desc: 'Add component' },
+      { name: 'unity_set_transform', desc: 'Set transform' },
+      { name: 'unity_get_script_source', desc: 'Read C# script' },
+      { name: 'unity_play_mode', desc: 'Play/stop/pause' },
+      { name: 'unity_execute_menu_item', desc: 'Execute menu item' }
+    ]},
+    { group: 'Unity \u00b7 Physics', engine: 'unity', tools: [
+      { name: 'unity_set_gravity', desc: 'Set world gravity' },
+      { name: 'unity_add_rigidbody', desc: 'Add Rigidbody component' },
+      { name: 'unity_add_joint', desc: 'Add physics joint' },
+      { name: 'unity_raycast', desc: 'Physics.Raycast' },
+      { name: 'unity_apply_force', desc: 'Apply force/impulse' }
+    ]},
+    { group: 'Unreal', engine: 'unreal', tools: [
+      { name: 'unreal_get_world_outliner', desc: 'World outliner tree' },
+      { name: 'unreal_get_actor', desc: 'Actor properties' },
+      { name: 'unreal_spawn_actor', desc: 'Spawn actor' },
+      { name: 'unreal_destroy_actor', desc: 'Destroy actor' },
+      { name: 'unreal_set_actor_transform', desc: 'Set transform' },
+      { name: 'unreal_set_actor_property', desc: 'Set actor property' },
+      { name: 'unreal_get_blueprint', desc: 'Inspect blueprint' },
+      { name: 'unreal_run_python', desc: 'Run Python script' },
+      { name: 'unreal_play_mode', desc: 'PIE play/stop' },
+      { name: 'unreal_get_viewport_screenshot', desc: 'Viewport capture' }
+    ]},
+    { group: 'Unreal \u00b7 Physics', engine: 'unreal', tools: [
+      { name: 'unreal_set_gravity', desc: 'Set world gravity' },
+      { name: 'unreal_set_simulate_physics', desc: 'Enable/disable physics' },
+      { name: 'unreal_add_physics_constraint', desc: 'Add constraint' },
+      { name: 'unreal_raycast', desc: 'Line trace' },
+      { name: 'unreal_apply_force', desc: 'Apply force/impulse' }
+    ]},
+    { group: 'Blender', engine: 'blender', tools: [
+      { name: 'blender_get_scene', desc: 'Scene hierarchy' },
+      { name: 'blender_get_object', desc: 'Object properties' },
+      { name: 'blender_create_object', desc: 'Create object' },
+      { name: 'blender_delete_object', desc: 'Delete object' },
+      { name: 'blender_set_transform', desc: 'Set transform' },
+      { name: 'blender_set_material', desc: 'Assign material' },
+      { name: 'blender_run_python', desc: 'Run bpy script' },
+      { name: 'blender_export', desc: 'Export scene/objects' }
+    ]},
+    { group: 'Blender \u00b7 Physics', engine: 'blender', tools: [
+      { name: 'blender_set_gravity', desc: 'Set scene gravity' },
+      { name: 'blender_setup_rigid_body', desc: 'Setup rigid body' },
+      { name: 'blender_add_constraint', desc: 'Rigid body constraint' },
+      { name: 'blender_bake_physics', desc: 'Bake simulation' },
+      { name: 'blender_apply_force', desc: 'Apply velocity/force' }
+    ]}
+  ];
+
+  function renderTools(filter) {
+    var container = document.getElementById('toolGroups');
+    var q = (filter || '').toLowerCase();
+    var total = 0;
+    var html = '';
+
+    for (var i = 0; i < TOOLS.length; i++) {
+      var g = TOOLS[i];
+      var items = g.tools.filter(function(t) {
+        return !q || t.name.indexOf(q) !== -1 || t.desc.toLowerCase().indexOf(q) !== -1 || g.group.toLowerCase().indexOf(q) !== -1;
+      });
+      if (!items.length) continue;
+      total += items.length;
+
+      html += '<div><div class="tgroup-label"><span class="tdot ' + g.engine + '"></span>' + g.group + ' <span style="color:var(--text-low)">(' + items.length + ')</span></div>';
+      html += '<div class="tgrid">';
+      for (var j = 0; j < items.length; j++) {
+        var t = items[j];
+        html += '<div class="titem"><span class="titem-dot ' + g.engine + '"></span>';
+        html += '<span class="titem-name">' + t.name + '</span>';
+        html += '<span class="titem-desc">' + t.desc + '</span></div>';
+      }
+      html += '</div></div>';
+    }
+
+    container.innerHTML = html;
+    document.getElementById('toolsCount').textContent = total + ' tools \u00b7 12 modules';
+  }
+
+  document.getElementById('toolFilter').addEventListener('input', function(e) { renderTools(e.target.value); });
+  renderTools('');
+
+  function addLog(msg, level) {
+    var area = document.getElementById('logArea');
+    var now = new Date();
+    var ts = [now.getHours(), now.getMinutes(), now.getSeconds()].map(function(n) { return String(n).padStart(2, '0'); }).join(':');
+    var cls = {info:'li', warn:'lw', error:'lr', ok:'lo'}[level] || 'li';
+    var el = document.createElement('div');
+    el.className = 'le';
+    el.innerHTML = '<span class="lt">[' + ts + ']</span> <span class="' + cls + '">' + msg + '</span>';
+    area.appendChild(el);
+    area.scrollTop = area.scrollHeight;
+    if (area.children.length > 200) area.removeChild(area.firstChild);
+  }
+
+  function updateRoblox(data) {
+    var roblox = data.roblox;
+    var luau = data.luau;
+    if (!roblox) return;
+
+    var s = document.getElementById('roblox-status');
+    if (luau && luau.health && luau.health.alive) {
+      s.textContent = 'active'; s.className = 'pill active';
+    } else if (roblox.available) {
+      s.textContent = 'detected'; s.className = 'pill detected';
+    } else {
+      s.textContent = 'offline'; s.className = 'pill offline';
+    }
+
+    if (luau && luau.detected) {
+      var b = document.getElementById('roblox-bridge');
+      b.textContent = luau.detected.bridge ? 'running' : 'down';
+      b.className = 'erow-v ' + (luau.detected.bridge ? 'ok' : 'err');
+
+      var p = document.getElementById('roblox-plugin');
+      p.textContent = luau.detected.scaffold ? 'found' : 'missing';
+      p.className = 'erow-v ' + (luau.detected.scaffold ? 'ok' : 'warn');
+
+      var h = document.getElementById('roblox-handshake');
+      h.textContent = luau.detected.handshake ? 'connected' : 'none';
+      h.className = 'erow-v ' + (luau.detected.handshake ? 'ok' : 'warn');
+    }
+  }
+
+  function updateTcpEngine(data, engineKey, statusId, bridgeId) {
+    var eng = data[engineKey];
+    if (!eng) return;
+    var s = document.getElementById(statusId);
+    if (eng.bridgeConnected) {
+      s.textContent = 'active'; s.className = 'pill active';
+    } else if (eng.available) {
+      s.textContent = 'detected'; s.className = 'pill detected';
+    } else {
+      s.textContent = 'offline'; s.className = 'pill offline';
+    }
+    var b = document.getElementById(bridgeId);
+    if (b && eng.detected) {
+      b.textContent = eng.detected.bridge ? 'connected' : 'waiting';
+      b.className = 'erow-v ' + (eng.detected.bridge ? 'ok' : 'warn');
+    }
+  }
+
+  function updateBlender(data) {
+    var blender = data.blender;
+    if (!blender) return;
+    var s = document.getElementById('blender-status');
+    if (blender.bridgeConnected) {
+      s.textContent = 'active'; s.className = 'pill active';
+    } else if (blender.available) {
+      s.textContent = 'detected'; s.className = 'pill detected';
+    } else {
+      s.textContent = 'offline'; s.className = 'pill offline';
+    }
+
+    if (blender.detected) {
+      var bin = document.getElementById('blender-binary');
+      bin.textContent = blender.detected.command ? 'found' : 'not found';
+      bin.className = 'erow-v ' + (blender.detected.command ? 'ok' : 'warn');
+
+      var br = document.getElementById('blender-bridge');
+      if (br) {
+        br.textContent = blender.detected.bridge ? 'connected' : 'waiting';
+        br.className = 'erow-v ' + (blender.detected.bridge ? 'ok' : 'warn');
+      }
+    }
+  }
+
+  function connectSSE() {
+    var dot = document.getElementById('sseDot');
+    var label = document.getElementById('sseLabel');
+    dot.className = 'live-dot wait';
+    label.textContent = 'connecting';
+
+    var es = new EventSource('/api/events');
+
+    es.onopen = function() {
+      dot.className = 'live-dot on';
+      label.textContent = 'live';
+      addLog('SSE stream connected', 'ok');
+    };
+
+    es.addEventListener('status', function(e) {
+      try {
+        var data = JSON.parse(e.data);
+        if (data.version) document.getElementById('version').textContent = 'v' + data.version;
+        updateRoblox(data);
+        updateTcpEngine(data, 'unity', 'unity-status', 'unity-bridge');
+        updateTcpEngine(data, 'unreal', 'unreal-status', 'unreal-bridge');
+        updateBlender(data);
+      } catch (err) {
+        addLog('Parse error: ' + err.message, 'error');
+      }
+    });
+
+    es.addEventListener('log', function(e) {
+      try { var d = JSON.parse(e.data); addLog(d.message, d.level || 'info'); } catch (_) {}
+    });
+
+    es.onerror = function() {
+      dot.className = 'live-dot wait';
+      label.textContent = 'reconnecting';
+      addLog('SSE disconnected, retrying...', 'warn');
+    };
+  }
+
+  fetch('/api/status')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.version) document.getElementById('version').textContent = 'v' + data.version;
+      updateRoblox(data);
+      updateTcpEngine(data, 'unity', 'unity-status', 'unity-bridge');
+      updateTcpEngine(data, 'unreal', 'unreal-status', 'unreal-bridge');
+      updateBlender(data);
+      addLog('Initial status loaded', 'ok');
+    })
+    .catch(function() { addLog('REST unavailable, waiting for SSE', 'warn'); });
+
+  connectSSE();
+
+  var AI_MODELS = {
+    anthropic: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022', 'claude-3-5-sonnet-20241022'],
+    openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o3-mini'],
+    google: ['gemini-2.0-flash', 'gemini-2.5-pro-preview-05-06', 'gemini-2.5-flash-preview-04-17']
+  };
+
+  var aiMessages = [];
+
+  function updateModelSelect() {
+    var provider = document.getElementById('aiProvider').value;
+    var sel = document.getElementById('aiModel');
+    sel.innerHTML = '';
+    (AI_MODELS[provider] || []).forEach(function(m) {
+      var opt = document.createElement('option');
+      opt.value = m; opt.textContent = m;
+      sel.appendChild(opt);
+    });
+    var savedKey = localStorage.getItem('mcp_ai_key_' + provider);
+    if (savedKey) document.getElementById('aiKey').value = savedKey;
+  }
+
+  document.getElementById('aiProvider').addEventListener('change', updateModelSelect);
+  updateModelSelect();
+
+  var savedProvider = localStorage.getItem('mcp_ai_provider');
+  if (savedProvider) {
+    document.getElementById('aiProvider').value = savedProvider;
+    updateModelSelect();
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function renderAiMessages() {
+    var area = document.getElementById('aiMessages');
+    var html = '';
+    for (var i = 0; i < aiMessages.length; i++) {
+      var msg = aiMessages[i];
+      html += '<div class="ai-msg">';
+      html += '<div class="ai-msg-role ' + msg.role + '">' + msg.role + '</div>';
+      html += '<div class="ai-msg-text">' + escapeHtml(msg.content) + '</div>';
+      if (msg.toolCalls) {
+        for (var j = 0; j < msg.toolCalls.length; j++) {
+          var tc = msg.toolCalls[j];
+          html += '<div class="ai-tool-call">';
+          html += '<div class="ai-tool-name">' + tc.name + '(' + escapeHtml(JSON.stringify(tc.input)) + ')</div>';
+          html += '<div class="ai-tool-result">' + escapeHtml(JSON.stringify(tc.result, null, 2).slice(0, 500)) + '</div>';
+          html += '</div>';
+        }
+      }
+      html += '</div>';
+    }
+    area.innerHTML = html || '<div style="color:var(--text-low);font-style:italic">No messages yet. Select a provider, enter your API key, and send a prompt.</div>';
+    area.scrollTop = area.scrollHeight;
+  }
+
+  renderAiMessages();
+
+  function sendAiMessage() {
+    var provider = document.getElementById('aiProvider').value;
+    var model = document.getElementById('aiModel').value;
+    var apiKey = document.getElementById('aiKey').value;
+    var prompt = document.getElementById('aiPrompt').value.trim();
+
+    if (!apiKey) { addLog('AI: API key required', 'warn'); return; }
+    if (!prompt) return;
+
+    localStorage.setItem('mcp_ai_provider', provider);
+    localStorage.setItem('mcp_ai_key_' + provider, apiKey);
+
+    aiMessages.push({ role: 'user', content: prompt });
+    renderAiMessages();
+    document.getElementById('aiPrompt').value = '';
+
+    var sendBtn = document.getElementById('aiSend');
+    sendBtn.disabled = true;
+    sendBtn.textContent = '...';
+
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: provider,
+        apiKey: apiKey,
+        model: model,
+        messages: aiMessages.filter(function(m) { return m.role === 'user' || m.role === 'assistant'; })
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        aiMessages.push({ role: 'error', content: data.error });
+      } else {
+        aiMessages.push({ role: 'assistant', content: data.content || '(no response)', toolCalls: data.toolCalls });
+        if (data.toolCalls && data.toolCalls.length) {
+          addLog('AI used ' + data.toolCalls.length + ' tool(s): ' + data.toolCalls.map(function(t) { return t.name; }).join(', '), 'ok');
+        }
+      }
+      renderAiMessages();
+    })
+    .catch(function(err) {
+      aiMessages.push({ role: 'error', content: 'Request failed: ' + err.message });
+      renderAiMessages();
+    })
+    .finally(function() {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send';
+    });
+  }
+
+  document.getElementById('aiSend').addEventListener('click', sendAiMessage);
+  document.getElementById('aiPrompt').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAiMessage(); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
-import { existsSync } from "node:fs";
-import { delimiter } from "node:path";
+import { existsSync, statSync } from "node:fs";
+import { delimiter, join } from "node:path";
 
 export function envFlag(name: string) {
   const value = process.env[name]?.trim();
@@ -18,8 +18,21 @@ export function commandExists(command: string) {
 
   for (const basePath of pathValue.split(delimiter)) {
     for (const name of names) {
-      if (existsSync(`${basePath}/${name}`)) {
+      const fullPath = join(basePath, name);
+      try {
+        if (!existsSync(fullPath)) {
+          continue;
+        }
+        if (process.platform !== "win32") {
+          const stat = statSync(fullPath);
+          const isExecutable = (stat.mode & 0o111) !== 0;
+          if (!isExecutable) {
+            continue;
+          }
+        }
         return true;
+      } catch {
+        continue;
       }
     }
   }

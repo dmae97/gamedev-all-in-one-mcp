@@ -3,10 +3,10 @@
 ```json
 {
   "mcpServers": {
-    "roblox-all-in-one": {
+    "gamedev-all-in-one": {
       "command": "node",
       "args": [
-        "/absolute/path/to/roblox_all_in_one_mcp/dist/index.js"
+        "/absolute/path/to/gamedev_all_in_one/dist/index.js"
       ]
     }
   }

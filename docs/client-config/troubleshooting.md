@@ -18,7 +18,7 @@ Studio-side runtime은 아래 endpoint를 기준으로 동작합니다.
 ```json
 {
   "protocolVersion": 1,
-  "runtimeName": "roblox-all-in-one-mcp-runtime",
+  "runtimeName": "gamedev-all-in-one-runtime",
   "runtimeVersion": "0.1.0",
   "bridgeMode": "http-long-poll",
   "capabilities": ["run_code"],

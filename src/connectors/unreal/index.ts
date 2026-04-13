@@ -1,7 +1,7 @@
 import { commandExists, envFlag } from "../../validation/environment.js";
 import { TcpBridge, type TcpCommandResponse } from "../shared/tcp-bridge.js";
 
-export type BlenderConnectorStatus = {
+export type UnrealConnectorStatus = {
   available: boolean;
   reasons: string[];
   detected: {
@@ -11,44 +11,44 @@ export type BlenderConnectorStatus = {
   bridgeConnected: boolean;
 };
 
-const DEFAULT_PORT = 9876;
+const DEFAULT_PORT = 55557;
 
 let bridge: TcpBridge | null = null;
 
-export function getBlenderBridge(): TcpBridge | null {
+export function getUnrealBridge(): TcpBridge | null {
   return bridge;
 }
 
-export function startBlenderBridge(): void {
-  const port = Number(process.env["BLENDER_BRIDGE_PORT"]) || DEFAULT_PORT;
+export function startUnrealBridge(): void {
+  const port = Number(process.env["UNREAL_BRIDGE_PORT"]) || DEFAULT_PORT;
   bridge = new TcpBridge({
     host: "127.0.0.1",
     port,
-    name: "blender",
+    name: "unreal",
     reconnectIntervalMs: 5_000,
     commandTimeoutMs: 10_000
   });
   bridge.start();
 }
 
-export function stopBlenderBridge(): void {
+export function stopUnrealBridge(): void {
   if (bridge) {
     bridge.stop();
     bridge = null;
   }
 }
 
-export async function detectBlenderConnector(): Promise<BlenderConnectorStatus> {
-  const command = commandExists("blender");
-  const envHint = envFlag("BLENDER_MCP_URL") || envFlag("BLENDER_EXECUTABLE") || envFlag("BLENDER_BRIDGE_PORT");
+export async function detectUnrealConnector(): Promise<UnrealConnectorStatus> {
+  const command = commandExists("UnrealEditor") || commandExists("UE4Editor") || commandExists("UE5Editor");
+  const envHint = envFlag("UNREAL_BRIDGE_PORT") || envFlag("UNREAL_PROJECT_PATH");
   const reasons: string[] = [];
 
   if (!command) {
-    reasons.push("No local Blender executable detected.");
+    reasons.push("No local Unreal Editor executable detected.");
   }
 
   if (!envHint) {
-    reasons.push("No Blender bridge hint detected (BLENDER_MCP_URL, BLENDER_EXECUTABLE, or BLENDER_BRIDGE_PORT).");
+    reasons.push("No Unreal environment hint detected (UNREAL_BRIDGE_PORT or UNREAL_PROJECT_PATH).");
   }
 
   return {
@@ -62,7 +62,7 @@ export async function detectBlenderConnector(): Promise<BlenderConnectorStatus> 
   };
 }
 
-export async function executeBlenderCommand(
+export async function executeUnrealCommand(
   method: string,
   params: Record<string, unknown>,
   options: { timeoutMs?: number } = {}
@@ -70,7 +70,7 @@ export async function executeBlenderCommand(
   if (!bridge || !bridge.isConnected) {
     return {
       ok: false,
-      reason: "Blender bridge not connected. Ensure the Blender MCP addon is running.",
+      reason: "Unreal bridge not connected. Ensure the Unreal C++ MCP plugin is running.",
       bridgeStatus: bridge?.status ?? null
     };
   }

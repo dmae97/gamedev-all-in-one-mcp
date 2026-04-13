@@ -3,10 +3,10 @@ local RuntimeModule = require(script.Parent.init)
 local PluginBootstrap = {}
 
 local function createToolbarButton(pluginInstance)
-    local toolbar = pluginInstance:CreateToolbar("Roblox All-in-One MCP")
+    local toolbar = pluginInstance:CreateToolbar("GAMEDEV_ALL_IN_ONE")
     local button = toolbar:CreateButton(
         "Runtime",
-        "Start the Roblox All-in-One MCP runtime loop",
+        "Start the GAMEDEV_ALL_IN_ONE runtime loop",
         ""
     )
 

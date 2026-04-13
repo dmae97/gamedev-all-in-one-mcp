@@ -4,7 +4,7 @@
 local Runtime = require(script.Parent.runtime_loop)
 
 return {
-    name = "roblox-all-in-one-mcp-runtime",
+    name = "gamedev-all-in-one-runtime",
     version = "0.1.0",
     protocolVersion = 1,
     bridgeMode = "http-long-poll",

@@ -1,23 +1,29 @@
 {
-  "name": "roblox-all-in-one-mcp",
+  "name": "gamedev-all-in-one",
   "version": "0.1.0",
   "private": false,
   "license": "AGPL-3.0-only",
-  "description": "Open-source all-in-one MCP for Roblox game creation with a Luau runtime companion and Blender workflow integration.",
+  "description": "Open-source all-in-one control plane for multi-engine game creation workflows, starting with a Luau runtime companion and Blender integration.",
   "type": "module",
   "bin": {
-    "roblox-all-in-one-mcp": "./dist/index.js"
+    "gamedev-all-in-one": "./dist/index.js",
+    "gamedev-all-in-one-local": "./dist/local.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && mkdir -p dist/web && cp src/web/dashboard.html dist/web/dashboard.html",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "dev:local": "tsx src/local.ts",
+    "start": "node dist/index.js",
+    "start:local": "node dist/local.js",
+    "local": "npm run build && node dist/local.js",
+    "test": "npm run build && node --test tests/*.test.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
+    "fastify": "^5.6.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {

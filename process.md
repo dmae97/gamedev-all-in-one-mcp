@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-- 프로젝트: `roblox-all-in-one-mcp`
+- 프로젝트: `gamedev-all-in-one`
 - 라이선스: `AGPL-3.0-only`
 - 현재 단계: 아키텍처 + 파운데이션 마일스톤 완료
 - 현재 공개 표면: 단일 로컬 stdio MCP 서버

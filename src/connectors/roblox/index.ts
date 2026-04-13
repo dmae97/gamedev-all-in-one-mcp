@@ -1,8 +1,13 @@
 import { commandExists, envFlag } from "../../validation/environment.js";
 import { detectLuauRuntime } from "../luau/index.js";
-import { dispatchLuauCreateWorkspacePart, dispatchLuauRunCode } from "../luau/bridge.js";
+import {
+  dispatchLuauCreateWorkspacePart,
+  dispatchLuauRunCode,
+  dispatchLuauCommand,
+  type LuauCommandKind
+} from "../luau/bridge.js";
 
-export type ConnectorStatus = {
+export type RobloxConnectorStatus = {
   available: boolean;
   reasons: string[];
   detected: {
@@ -11,7 +16,7 @@ export type ConnectorStatus = {
   };
 };
 
-export async function detectRobloxConnector(): Promise<ConnectorStatus> {
+export async function detectRobloxConnector(): Promise<RobloxConnectorStatus> {
   const token = envFlag("ROBLOX_API_KEY") || envFlag("ROBLOX_MCP_URL") || envFlag("ROBLOX_PLACE_ID");
   const command = commandExists("roblox") || commandExists("rojo");
   const reasons: string[] = [];
@@ -92,6 +97,33 @@ export async function createRobloxWorkspacePartWorkflow(
       position: input.position ?? { x: 0, y: 5, z: 0 },
       size: input.size ?? { x: 4, y: 1, z: 2 }
     },
+    options.waitForResponseMs ?? 2_000
+  );
+
+  return {
+    ok: dispatch.status === "ok" || dispatch.status === "queued",
+    luau,
+    dispatch
+  };
+}
+
+export async function executeRobloxCommand(
+  kind: LuauCommandKind,
+  payload: Record<string, unknown>,
+  options: { waitForResponseMs?: number; cwd?: string } = {}
+) {
+  const luau = await detectLuauRuntime(options.cwd);
+  if (!luau.health.alive) {
+    return {
+      ok: false,
+      reason: `Luau companion runtime is not healthy enough to execute ${kind}.`,
+      luau
+    };
+  }
+
+  const dispatch = await dispatchLuauCommand(
+    kind,
+    payload,
     options.waitForResponseMs ?? 2_000
   );
 

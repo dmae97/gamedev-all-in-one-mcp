@@ -3,6 +3,8 @@ import { z } from "zod";
 import { detectBlenderConnector } from "../connectors/blender/index.js";
 import { detectLuauRuntime } from "../connectors/luau/index.js";
 import { detectRobloxConnector } from "../connectors/roblox/index.js";
+import { detectUnityConnector } from "../connectors/unity/index.js";
+import { detectUnrealConnector } from "../connectors/unreal/index.js";
 import {
   createProjectManifest,
   inspectProjectManifest,
@@ -13,6 +15,8 @@ type CapabilityReport = {
   manifest: ManifestInspection;
   roblox: Awaited<ReturnType<typeof detectRobloxConnector>>;
   luau: Awaited<ReturnType<typeof detectLuauRuntime>>;
+  unity: Awaited<ReturnType<typeof detectUnityConnector>>;
+  unreal: Awaited<ReturnType<typeof detectUnrealConnector>>;
   blender: Awaited<ReturnType<typeof detectBlenderConnector>>;
   workflows: {
     toolsOnlyCompatible: boolean;
@@ -21,9 +25,11 @@ type CapabilityReport = {
 };
 
 async function buildCapabilityReport(cwd = process.cwd()): Promise<CapabilityReport> {
-  const [roblox, luau, blender] = await Promise.all([
+  const [roblox, luau, unity, unreal, blender] = await Promise.all([
     detectRobloxConnector(),
     detectLuauRuntime(),
+    detectUnityConnector(),
+    detectUnrealConnector(),
     detectBlenderConnector()
   ]);
 
@@ -31,6 +37,8 @@ async function buildCapabilityReport(cwd = process.cwd()): Promise<CapabilityRep
     manifest: inspectProjectManifest(cwd),
     roblox,
     luau,
+    unity,
+    unreal,
     blender,
     workflows: {
       toolsOnlyCompatible: true,
@@ -135,14 +143,18 @@ export function registerFoundationTools(server: McpServer) {
     async ({ includeManifest }) => {
       const report = await buildCapabilityReport();
       const summary = {
-        ok: Boolean(report.roblox.available || report.luau.available || report.blender.available),
+        ok: Boolean(report.roblox.available || report.luau.available || report.unity.available || report.unreal.available || report.blender.available),
         manifestChecked: includeManifest,
         robloxAvailable: report.roblox.available,
         luauAvailable: report.luau.available,
+        unityAvailable: report.unity.available,
+        unrealAvailable: report.unreal.available,
         blenderAvailable: report.blender.available,
         missing: [
           ...(report.roblox.available ? [] : report.roblox.reasons),
           ...(report.luau.available ? [] : report.luau.reasons),
+          ...(report.unity.available ? [] : report.unity.reasons),
+          ...(report.unreal.available ? [] : report.unreal.reasons),
           ...(report.blender.available ? [] : report.blender.reasons)
         ]
       };

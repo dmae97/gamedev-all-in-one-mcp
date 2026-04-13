@@ -1,0 +1,198 @@
+═══════════════════════════════════════════════════════════════════════════
+Token Analysis: Session ses_27bde450cffewrlHs6FrLUygVo
+Model: gpt-5.4
+═══════════════════════════════════════════════════════════════════════════
+
+WARNINGS
+───────────────────────────────────────────────────
+- Pricing for 'openai/gpt-5.4' was not found in models.json. Cost estimates use the default fallback rates ($1/M input, $3/M output, no cache pricing).
+- OpenCode export failed for session ses_27bde450cffewrlHs6FrLUygVo. Context sections were skipped: JSON Parse error: Property name must be a string literal
+
+TOKEN BREAKDOWN BY CATEGORY
+─────────────────────────────────────────────────────────────────────────
+Estimated using tokenizer analysis of message content:
+
+Input Categories:
+  SYSTEM    ███████░░░░░░░░░░░░░░░░░░░░░░░    24.3% (34,527)
+  USER      ████░░░░░░░░░░░░░░░░░░░░░░░░░░    11.7% (16,647)
+  TOOLS     ███████████████████░░░░░░░░░░░    64.0% (91,053)
+
+  Subtotal: 142,227 estimated input tokens
+  Note: inferred system/overhead values are heuristic estimates from API telemetry.
+
+Output Categories:
+  ASSISTANT ███████████████████░░░░░░░░░░░    64.8% (27,490)
+  REASONING ███████████░░░░░░░░░░░░░░░░░░░    35.2% (14,949)
+
+  Subtotal: 42,439 estimated output tokens
+
+Local Total: 184,666 tokens (estimated)
+
+TOOL USAGE BREAKDOWN
+─────────────────────────────────────────────────────────────────────────
+read                 ██████████░░░░░░░░░░░░░░░░░░░░    32.2% (29,341)  108x
+firecrawl_firecrawl_search ██████░░░░░░░░░░░░░░░░░░░░░░░░    19.7% (17,926)   17x
+skill                ██████░░░░░░░░░░░░░░░░░░░░░░░░    19.1% (17,377)   20x
+bash                 ████░░░░░░░░░░░░░░░░░░░░░░░░░░    14.9% (13,564)   51x
+gh_grep_searchGitHub ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░      5.5% (4,987)    5x
+todowrite            █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░      2.9% (2,683)   32x
+grep                 █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░      2.4% (2,217)   10x
+write                ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░      1.2% (1,138)    7x
+grep_app_searchGitHub ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░        0.7% (600)    2x
+apply_patch          ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░        0.3% (257)   15x
+call_omo_agent       ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░        0.2% (209)   11x
+edit                 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░        0.2% (206)   38x
+session_list         ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░        0.2% (202)    1x
+session_info         ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         0.1% (96)    1x
+background_output    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         0.1% (77)   11x
+background_cancel    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         0.1% (47)    1x
+glob                 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         0.0% (42)    6x
+firecrawl_firecrawl_scrape ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         0.0% (35)    5x
+context7_resolve-library-id ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         0.0% (21)    3x
+context7_query-docs  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         0.0% (21)    3x
+playwright_browser_navigate ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░          0.0% (7)    1x
+
+TOP CONTRIBUTORS
+─────────────────────────────────────────────────────────────────────────
+• System (inferred from API telemetry) 34,527 tokens (18.7%)
+• read                         29,341 tokens (15.9%)
+• firecrawl_firecrawl_search   17,926 tokens (9.7%)
+• skill                        17,377 tokens (9.4%)
+• bash                         13,564 tokens (7.3%)
+
+═══════════════════════════════════════════════════════════════════════════
+MOST RECENT API CALL
+─────────────────────────────────────────────────────────────────────────
+
+Raw telemetry from last API response:
+  Input (fresh):            403 tokens
+  Cache read:           141,824 tokens
+  Output:                    35 tokens
+  Reasoning:                 29 tokens
+  Provider total:       142,291 tokens
+  ─────────────────────────────────────
+  Total:                142,291 tokens
+
+═══════════════════════════════════════════════════════════════════════════
+SESSION TOTALS (All 224 API calls)
+─────────────────────────────────────────────────────────────────────────
+
+Assistant messages observed: 227 (structural count)
+
+Total tokens processed across the entire session (for cost calculation):
+
+  Input tokens:       1,123,715 (fresh tokens across all calls)
+  Cache read:        29,324,935 (cached tokens across all calls)
+  Cache write:          922,640 (tokens written to cache)
+  Output tokens:        132,757 (all model responses)
+  Reasoning tokens:      34,549 (thinking/reasoning)
+  ─────────────────────────────────────
+  Session Total:     31,538,596 tokens (for billing)
+  Cache read calls:         220 / 224
+  Cache write calls:        110 / 224
+
+═══════════════════════════════════════════════════════════════════════════
+SESSION COST
+─────────────────────────────────────────────────────────────────────────
+
+Token usage breakdown:
+  Input tokens:       1,123,715
+  Output tokens:        132,757
+  Reasoning tokens:      34,549
+  Cache read:        29,324,935
+  Cache write:          922,640
+
+─────────────────────────────────────────────────────────────────────────
+ACTUAL COST (from API):  $13.7379
+Estimated cost:          $1.6256 (-88.2% diff)
+
+Note: Actual cost from OpenCode includes provider-specific pricing
+and 200K+ context adjustments.
+
+══════════════════════════════════════════════════════════════════════════
+AVAILABLE SKILLS (always-available context)
+─────────────────────────────────────────────────────────────────────────
+
+These skills were recovered from the skill tool metadata available to this session.
+
+  Skill                  Description                                   Tokens
+  ───────────────────────────────────────────────────────────────────────
+  autoplan               Auto-review pipeline — reads the full CEO, d…     ~24
+  ───────────────────────────────────────────────────────────────────────
+  Total: ~24 tokens (1 skills available)
+
+  Note: Full skill tool description is ~9,692 tokens (includes boilerplate).
+
+═══════════════════════════════════════════════════════════════════════════
+LOADED SKILLS (on-demand content)
+─────────────────────────────────────────────────────────────────────────
+
+Skills loaded during this session via the skill tool.
+
+  Skill                  Message #     Tokens     Calls
+  ─────────────────────────────────────────────────────
+  review-work                   #50      9,544        2x
+  playwright                   #115      3,533        1x
+  karpathy-guidelines           #48      2,372        4x
+  frontend-ui-ux               #214        825        1x
+  spec-kit-bridge               #97        527        1x
+  strategy/brainstorm           #94        366        2x
+  spec/specify                 #101        215        1x
+  ─────────────────────────────────────────────────────
+  Total: 17,382 tokens (7 skills loaded)
+
+  Note: Loaded skill content stays in context (protected from pruning).
+
+═══════════════════════════════════════════════════════════════════════════
+SUBAGENT COSTS (35 child sessions, 93 API calls)
+─────────────────────────────────────────────────────────────────────────
+
+  oracle                       $0.2232  (162,362 tokens, 7 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  oracle                       $0.2071  (97,478 tokens, 6 calls)
+  oracle                       $0.2821  (155,829 tokens, 7 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.2497  (716,831 tokens, 19 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.1202  (303,244 tokens, 12 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  oracle                       $0.4361  (303,832 tokens, 12 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0452  (76,905 tokens, 5 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0648  (98,619 tokens, 6 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0583  (98,476 tokens, 6 calls)
+  librarian                    $0.1843  (257,046 tokens, 3 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0000  (0 tokens, 0 calls)
+  explore                      $0.0805  (181,892 tokens, 10 calls)
+─────────────────────────────────────────────────────────────────────────
+Subagent Total:            $1.9513  (2,452,514 tokens, 93 calls)
+
+═══════════════════════════════════════════════════════════════════════════
+SUMMARY
+─────────────────────────────────────────────────────────────────────────
+
+                          Cost        Tokens          API Calls
+  Main session:      $   13.7379    31,538,596           224
+  Subagents:         $    1.9513     2,452,514            93
+─────────────────────────────────────────────────────────────────────────
+  TOTAL:             $   15.6892    33,991,110           317
+
+═══════════════════════════════════════════════════════════════════════════
