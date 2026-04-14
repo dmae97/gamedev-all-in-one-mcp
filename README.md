@@ -248,6 +248,11 @@ graph TB
 
 The built-in dashboard at **http://127.0.0.1:3100** features a dark glassmorphism UI:
 
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="Web Dashboard" width="800" />
+</p>
+
+
 | Panel | Description |
 |:------|:------------|
 | **Engine Status** | Real-time connection status for all 4 engines with animated glow effects |
@@ -259,9 +264,9 @@ The built-in dashboard at **http://127.0.0.1:3100** features a dark glassmorphis
 
 | Provider | Models |
 |:---------|:-------|
-| **Anthropic** | Claude Sonnet 4, Claude 3.5 Haiku, Claude 3.5 Sonnet |
-| **OpenAI** | GPT-4o, GPT-4o Mini, GPT-4 Turbo, o3-mini |
-| **Google** | Gemini 2.0 Flash, Gemini 2.5 Pro, Gemini 2.5 Flash |
+| **Anthropic** | Claude Opus 4.6, Claude Sonnet 4.6, Claude Haiku 4.5 |
+| **OpenAI** | GPT-5.4, GPT-5.4 Mini, GPT-5.4 Nano, o3, o4-mini |
+| **Google** | Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.5 Flash-Lite |
 
 > API keys are stored in **localStorage only** — never sent to or stored on the server.
 
