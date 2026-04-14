@@ -201,7 +201,7 @@ class LuauRuntimeBridge {
           return;
         }
 
-      console.error("gamedev-all-in-one bridge request failed:", error);
+        console.error("gamedev-all-in-one bridge request failed:", error);
         this.json(response, 500, { error: "Internal server error" });
       }
     });
@@ -351,14 +351,17 @@ class LuauRuntimeBridge {
     }
 
     this.responseCleanupTimer = setInterval(() => {
-      const now = Date.now();
-      for (const [id, entry] of this.responses) {
-        if (now - entry.storedAt > RESPONSE_TTL_MS) {
-          this.responses.delete(id);
+      try {
+        const now = Date.now();
+        for (const [id, entry] of this.responses) {
+          if (now - entry.storedAt > RESPONSE_TTL_MS) {
+            this.responses.delete(id);
+          }
         }
+      } catch (err) {
+        console.error("[luau-bridge] response cleanup error:", err);
       }
     }, RESPONSE_CLEANUP_INTERVAL_MS);
-    this.responseCleanupTimer.unref();
   }
 
   private async readJson(

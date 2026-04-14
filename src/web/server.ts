@@ -14,6 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const DEFAULT_PORT = 3100;
 const ALLOWED_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]"]);
+const ALLOWED_ORIGINS = new Set(["http://127.0.0.1:3100", "http://localhost:3100", "http://[::1]:3100"]);
 const SSE_INTERVAL_MS = 5_000;
 const MAX_SSE_CLIENTS = 20;
 
@@ -54,13 +55,16 @@ function validateHost(req: IncomingMessage): boolean {
   return ALLOWED_HOSTS.has(hostname);
 }
 
-function jsonResponse(res: ServerResponse, status: number, data: unknown) {
+function jsonResponse(res: ServerResponse, status: number, data: unknown, req?: IncomingMessage) {
   const body = JSON.stringify(data);
-  res.writeHead(status, {
+  const origin = req?.headers.origin ?? "";
+  const corsOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "";
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "Cache-Control": "no-cache",
-    "Access-Control-Allow-Origin": "*"
-  });
+    "Cache-Control": "no-cache"
+  };
+  if (corsOrigin) headers["Access-Control-Allow-Origin"] = corsOrigin;
+  res.writeHead(status, headers);
   res.end(body);
 }
 
@@ -72,12 +76,15 @@ function handleSSE(_req: IncomingMessage, res: ServerResponse) {
     return;
   }
 
-  res.writeHead(200, {
+  const origin = _req.headers.origin ?? "";
+  const corsOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "";
+  const sseHeaders: Record<string, string> = {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
-    "Connection": "keep-alive",
-    "Access-Control-Allow-Origin": "*"
-  });
+    "Connection": "keep-alive"
+  };
+  if (corsOrigin) sseHeaders["Access-Control-Allow-Origin"] = corsOrigin;
+  res.writeHead(200, sseHeaders);
 
   res.write("event: connected\ndata: {}\n\n");
   sseClients.add(res);
@@ -142,11 +149,14 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   const method = req.method ?? "GET";
 
   if (method === "OPTIONS") {
-    res.writeHead(204, {
-      "Access-Control-Allow-Origin": "*",
+    const origin = req.headers.origin ?? "";
+    const corsOrigin = ALLOWED_ORIGINS.has(origin) ? origin : "";
+    const optHeaders: Record<string, string> = {
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
-    });
+    };
+    if (corsOrigin) optHeaders["Access-Control-Allow-Origin"] = corsOrigin;
+    res.writeHead(204, optHeaders);
     res.end();
     return;
   }
@@ -155,25 +165,34 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
     try {
       const body = await readRequestBody(req, 65536);
       const parsed = JSON.parse(body) as ChatRequest;
-      if (!parsed.provider || !parsed.apiKey || !parsed.model || !parsed.messages) {
-        jsonResponse(res, 400, { error: "Missing required fields: provider, apiKey, model, messages" });
+      if (
+        !parsed.provider || !parsed.apiKey || !parsed.model ||
+        !Array.isArray(parsed.messages) || parsed.messages.length === 0
+      ) {
+        jsonResponse(res, 400, { error: "Missing required fields: provider, apiKey, model, messages (non-empty array)" }, req);
         return;
       }
+      for (const msg of parsed.messages) {
+        if (typeof msg.role !== "string" || typeof msg.content !== "string") {
+          jsonResponse(res, 400, { error: "Each message must have string role and content" }, req);
+          return;
+        }
+      }
       const result = await chat(parsed);
-      jsonResponse(res, 200, result);
+      jsonResponse(res, 200, result, req);
     } catch (err) {
-      jsonResponse(res, 500, { error: `Chat failed: ${String(err)}` });
+      jsonResponse(res, 500, { error: `Chat failed: ${String(err)}` }, req);
     }
     return;
   }
 
   if (method === "GET" && url === "/api/models") {
-    jsonResponse(res, 200, AVAILABLE_MODELS);
+    jsonResponse(res, 200, AVAILABLE_MODELS, req);
     return;
   }
 
   if (method !== "GET") {
-    jsonResponse(res, 405, { error: "Method not allowed" });
+    jsonResponse(res, 405, { error: "Method not allowed" }, req);
     return;
   }
 
@@ -195,9 +214,9 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   if (url === "/api/status") {
     try {
       const payload = await buildStatusPayload();
-      jsonResponse(res, 200, payload);
+      jsonResponse(res, 200, payload, req);
     } catch (err) {
-      jsonResponse(res, 500, { error: "Failed to build status", detail: String(err) });
+      jsonResponse(res, 500, { error: "Failed to build status", detail: String(err) }, req);
     }
     return;
   }
@@ -219,7 +238,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         { module: "blender", count: 8, tools: ["blender_get_scene", "blender_get_object", "blender_create_object", "blender_delete_object", "blender_set_transform", "blender_set_material", "blender_run_python", "blender_export"] },
         { module: "blender-physics", count: 5, tools: ["blender_set_gravity", "blender_setup_rigid_body", "blender_add_constraint", "blender_bake_physics", "blender_apply_force"] }
       ]
-    });
+    }, req);
     return;
   }
 

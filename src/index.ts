@@ -7,9 +7,9 @@ import { createServer } from "./server/create-server.js";
 import { startDashboardServer, stopDashboardServer } from "./web/server.js";
 
 async function main() {
-  startUnityBridge();
-  startUnrealBridge();
-  startBlenderBridge();
+  try { startUnityBridge(); } catch (err) { console.error("[unity] bridge start failed:", err); }
+  try { startUnrealBridge(); } catch (err) { console.error("[unreal] bridge start failed:", err); }
+  try { startBlenderBridge(); } catch (err) { console.error("[blender] bridge start failed:", err); }
 
   await Promise.all([
     startLuauRuntimeBridge(),

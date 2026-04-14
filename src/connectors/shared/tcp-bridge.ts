@@ -94,8 +94,14 @@ export class TcpBridge {
 
       this.pending.set(id, { resolve, timer });
 
+      if (!this.socket) {
+        this.pending.delete(id);
+        clearTimeout(timer);
+        resolve({ id, status: "error", error: `${this.config.name} socket is not connected` });
+        return;
+      }
       try {
-        this.socket!.write(payload);
+        this.socket.write(payload);
       } catch {
         this.pending.delete(id);
         clearTimeout(timer);
@@ -106,16 +112,22 @@ export class TcpBridge {
 
   private tryConnect(): void {
     if (this.stopped) return;
+    if (this.socket) {
+      this.socket.destroy();
+      this.socket = null;
+    }
 
     const sock = new Socket();
     this.socket = sock;
 
     sock.setEncoding("utf-8");
+    sock.setTimeout(10_000);
 
     sock.on("connect", () => {
       this.connected = true;
       this.lastConnectedAt = new Date().toISOString();
       this.buffer = "";
+      sock.setTimeout(0);
       console.error(`[${this.config.name}] connected to ${this.config.host}:${this.config.port}`);
     });
 
@@ -130,8 +142,17 @@ export class TcpBridge {
       this.scheduleReconnect();
     });
 
-    sock.on("error", () => {
+    sock.on("error", (err) => {
       this.connected = false;
+      for (const [id, p] of this.pending) {
+        clearTimeout(p.timer);
+        p.resolve({ id, status: "error", error: `Socket error: ${err.message}` });
+      }
+      this.pending.clear();
+    });
+
+    sock.on("timeout", () => {
+      sock.destroy();
     });
 
     sock.connect(this.config.port, this.config.host);

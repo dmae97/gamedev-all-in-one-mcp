@@ -233,7 +233,14 @@ async function callOpenAI(req: ChatRequest): Promise<ChatResponse> {
 
     for (const tc of msg.tool_calls as Array<Record<string, unknown>>) {
       const fn = tc.function as Record<string, unknown>;
-      const args = JSON.parse(fn.arguments as string);
+      let args: Record<string, unknown>;
+      try {
+        args = JSON.parse(fn.arguments as string);
+      } catch {
+        console.error(`[llm-proxy] Failed to parse tool arguments for ${fn.name}: ${fn.arguments}`);
+        messages.push({ role: "tool", tool_call_id: tc.id, content: JSON.stringify({ error: "Invalid tool arguments JSON" }) });
+        continue;
+      }
       const result = await executeTool(fn.name as string, args);
       toolCalls.push({ name: fn.name as string, input: args, result });
       messages.push({ role: "tool", tool_call_id: tc.id, content: JSON.stringify(result) });
@@ -252,10 +259,13 @@ async function callGoogle(req: ChatRequest): Promise<ChatResponse> {
 
   for (let i = 0; i < 10; i++) {
     const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${req.model}:generateContent?key=${req.apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${req.model}:generateContent`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": req.apiKey
+        },
         body: JSON.stringify({
           contents,
           tools: toGoogleTools(),
@@ -263,7 +273,6 @@ async function callGoogle(req: ChatRequest): Promise<ChatResponse> {
         })
       }
     );
-
     if (!resp.ok) {
       const err = await resp.text();
       return { content: "", error: `Google ${resp.status}: ${err}` };

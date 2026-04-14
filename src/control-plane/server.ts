@@ -15,6 +15,11 @@ const launchJobSchema = z.object({
   mcpIds: z.array(z.string()).default([])
 }).strict();
 
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" };
+  return text.replace(/[&<>"']/g, (c) => map[c]);
+}
+
 function renderPage() {
   return `<!doctype html>
 <html lang="en">
@@ -56,7 +61,7 @@ function renderPage() {
         providerSelect.innerHTML = data.providers.map((provider) => {
           const disabled = provider.available ? '' : 'disabled';
           const selected = data.defaults.defaultProviderId === provider.id ? 'selected' : '';
-          return '<option value="' + provider.id + '" ' + disabled + ' ' + selected + '>' + provider.label + '</option>';
+          return '<option value="' + escapeHtml(provider.id) + '" ' + disabled + ' ' + selected + '>' + escapeHtml(provider.label) + '</option>';
         }).join('');
       }
 
